@@ -1,0 +1,13 @@
+# Density Estimation Showdown — pinned dependencies (CPU only).
+# torch is installed from the CPU wheel index:
+#   pip install -r requirements.txt
+#   pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cpu
+numpy==2.2.6
+scipy==1.15.3
+scikit-learn==1.6.1
+pandas==2.2.3
+matplotlib==3.10.3
+seaborn==0.13.2
+pyyaml==6.0.2
+pytest==8.3.5
+# torch==2.7.1   # install separately from the CPU index (see above)

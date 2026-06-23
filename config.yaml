@@ -1,0 +1,103 @@
+# =============================================================================
+# Density Estimation Showdown — central configuration.
+# All hyperparameters, seeds, paths and grid resolutions live here so that
+# scripts/run_all.py reproduces every table and figure deterministically.
+# =============================================================================
+
+seed: 20252026            # single global seed (numpy + torch seeded from this)
+
+paths:
+  data_dir: data
+  results_dir: results
+  figures_dir: results/figures
+  tables_dir: results/tables
+
+# -----------------------------------------------------------------------------
+# Datasets
+# -----------------------------------------------------------------------------
+synthetic_2d:
+  n_train: 1000           # samples used to fit the estimators
+  n_test: 2000            # fresh held-out sample for log-likelihood
+  # Mixture of 3 bivariate Gaussians. means / covs / weights are hard-coded so
+  # that p_true(x) is available in closed form (see src/datasets.py).
+  weights: [0.40, 0.35, 0.25]
+  means:
+    - [-2.0, -1.0]
+    - [ 2.0,  1.5]
+    - [ 0.0,  3.0]
+  covs:
+    - [[1.0,  0.4], [0.4, 0.8]]
+    - [[1.2, -0.6], [-0.6, 1.0]]
+    - [[0.5,  0.0], [0.0, 0.5]]
+  # Evaluation grid (also used for ISE numerical integration).
+  grid:
+    x_min: -6.0
+    x_max:  6.0
+    y_min: -5.0
+    y_max:  7.0
+    res: 200              # grid is res x res
+
+synthetic_1d:
+  n_train: 1000
+  n_test: 2000
+  weights: [0.5, 0.3, 0.2]
+  means: [-3.0, 0.5, 4.0]
+  stds:  [0.8, 1.0, 0.6]
+  grid:
+    x_min: -8.0
+    x_max:  8.0
+    res: 2000
+
+old_faithful:
+  csv_fallback: data/old_faithful.csv
+  features: [duration, waiting]
+  # Published GMM component means for the waiting time (sanity check, §2.2).
+  published_waiting_means: [54.6, 80.1]
+
+# -----------------------------------------------------------------------------
+# Estimators
+# -----------------------------------------------------------------------------
+parzen:
+  bandwidth: silverman    # "silverman" | float | "cv"
+  cv_folds: 5
+  # Grid of candidate bandwidths (multipliers of the Silverman bandwidth) used
+  # by the CV selector and by the sensitivity sweep (§4.5).
+  bandwidth_grid: [0.2, 0.35, 0.5, 0.7, 1.0, 1.4, 2.0, 3.0, 5.0]
+
+knn:
+  k: 20
+  k_grid: [3, 5, 10, 20, 35, 50, 75, 100]
+  renormalize: true       # renormalize over the evaluation grid (§3.2 caveat)
+
+gmm:
+  n_components_synthetic: 3
+  n_components_faithful: 2
+  bic_max_components: 8    # select n_components in [1, bic_max_components] via BIC
+  reg_covar: 1.0e-6
+
+pnn:
+  hidden: [64, 64]         # MLP hidden layer widths
+  activation: tanh         # "tanh" | "relu"
+  output_head: softplus    # "softplus" | "exp" | "square" -> guarantees f(x) >= 0
+  epochs: 400
+  lr: 0.005
+  weight_decay: 1.0e-5
+  batch_size: 256
+  # Training inputs = train samples + uniform grid samples over the support.
+  n_grid_inputs: 1000
+  integral_penalty: 0.5    # lambda for the unit-integral soft constraint (0 disables)
+  integral_grid_res: 60    # resolution of the grid used to estimate ∫ f_θ
+  parzen_target_bandwidth: silverman
+
+# -----------------------------------------------------------------------------
+# Experiments
+# -----------------------------------------------------------------------------
+experiments:
+  n_seeds: 20             # repetitions for the synthetic accuracy experiment (§4.1)
+  cv_folds: 10            # k-fold for Old Faithful (§4.2)
+  timing:
+    train_sizes: [100, 500, 1000, 5000]
+    n_query: 2000         # query points for the timing benchmark
+    repeats: 5            # timing repetitions (report best/median)
+  ablation_seeds: 10      # seeds for the PNN soft-constraint ablation (§4.6)
+  alpha: 0.05             # significance level for the statistical tests
