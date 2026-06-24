@@ -136,8 +136,8 @@ Numbers below are from a full run (`seed=20252026`). See
 
 | N | Parzen | k-NN | GMM | PNN |
 |---|---|---|---|---|
-| 100  | 0.0021 | 0.0010 | 0.0006 | 0.0004 |
-| 5000 | 0.1620 | 0.0942 | 0.0006 | **0.0009** |
+| 100  | 0.0019 | 0.0010 | 0.0006 | 0.0004 |
+| 5000 | 0.1127 | 0.0561 | 0.0006 | **0.0004** |
 
 **Headline findings**
 
@@ -147,7 +147,7 @@ Numbers below are from a full run (`seed=20252026`). See
 - **The PNN matches Parzen's accuracy** (ISE 0.0032 vs 0.0033; Old Faithful
   −4.462 vs −4.467) — and a Holm-corrected Wilcoxon test finds the **PNN–Parzen
   difference on Old Faithful is not significant** (p = 0.32) — while being
-  **~180× faster than Parzen at query time** for N=5000 and ~constant in N.
+  **~300× faster than Parzen at query time** for N=5000 and ~constant in N.
 - **Parzen / k-NN query cost grows linearly in N**; GMM and PNN are ~constant.
 - **Soft-constraint ablation:** the unit-integral penalty tightens the learned
   density's integral from **1.045 → 1.007** at no accuracy cost.
